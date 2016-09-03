@@ -1,10 +1,12 @@
 var mts = {
 	zombies: [],
 	survivors: [],
+	guardian: null,
 
 	init: function() {
 		var graphics = [
 			'img/guardian.png',
+			'img/mark.png',
 			'img/scene.jpg',
 			'img/survivor.png',
 			'img/zombie.png',
@@ -16,13 +18,20 @@ var mts = {
 		animations['survivor'] = new rtge.Animation();
 		animations['survivor'].steps = ['img/survivor.png'];
 		animations['survivor'].durations = [600000];
+		animations['guardian'] = new rtge.Animation();
+		animations['guardian'].steps = ['img/guardian.png'];
+		animations['guardian'].durations = [600000];
+		animations['guardian.mark'] = new rtge.Animation();
+		animations['guardian.mark'].steps = ['img/mark.png'];
+		animations['guardian.mark'].durations = [600000];
 		mts.zombies = [
 			new mts.Zombie(100, 100),
 		];
 		mts.survivors = [
 			new mts.Survivor(1250, 660),
 		];
-		var objects = mts.zombies.concat(mts.survivors);
+		mts.guardian = new mts.Guardian(675, 380);
+		var objects = mts.zombies.concat(mts.survivors).concat(mts.guardian);
 		var camera = new rtge.Camera();
 
 		rtge.init(
@@ -48,8 +57,10 @@ var mts = {
 		rtge.DynObject.call(this);
 		this.x = x;
 		this.y = y;
-		this.z = 1;
+		this.z = 2;
 		this.animation = 'zombie';
+		this.anchorX = 25;
+		this.anchorY = 50;
 
 		this.velocity = {x: 0, y: 0};
 		this.maxSpeed = 100;
@@ -79,16 +90,23 @@ var mts = {
 		rtge.DynObject.call(this);
 		this.x = x;
 		this.y = y;
-		this.z = 1;
+		this.z = 2;
 		this.animation = 'survivor';
+		this.anchorX = 25;
+		this.anchorY = 50;
 
 		this.velocity = {x: 0, y: 0};
 		this.maxSpeed = 150;
 
 		this.tick = function(timeDiff) {
 			timeDiff /= 1000.;
+
 			var direction = {x: 0, y: 0};
-			direction = mts.addVelocities(direction, mts.multiplyVelocity(this.steeringChase(), this.maxSpeed * timeDiff / 2));
+			direction = mts.addVelocities(direction, this.steeringChase());
+			for (let i = 0; i < mts.guardian.marks.length; ++i) {
+				direction = mts.addVelocities(direction, mts.steeringFlee(this, mts.guardian.marks[i]));
+			}
+
 			this.velocity = mts.addVelocities(this.velocity, direction);
 			this.velocity = mts.normalizeVelocity(this.velocity, this.maxSpeed * timeDiff);
 
@@ -121,6 +139,78 @@ var mts = {
 
 			return res;
 		};
+	},
+
+	steeringFlee: function(actor, fleeFrom) {
+		var fleeDirection = mts.multiplyVelocity(mts.computeDirectVector(actor, fleeFrom), -1.);
+		var pointDistance = mts.computeMagnitude(fleeDirection);
+		if (pointDistance < 200) {
+			return mts.normalizeVelocity(fleeDirection, Math.min(Math.pow(50., 10) / Math.pow(pointDistance, 10), 1.));
+		} else {
+			return {x:0, y:0};
+		}
+	},
+
+	Guardian: function(x, y) {
+		rtge.DynObject.call(this);
+		this.x = x;
+		this.y = y;
+		this.z = 2;
+		this.animation = 'guardian';
+		this.anchorX = 25;
+		this.anchorY = 50;
+
+		this.direction = {x: 0, y: -1};
+		this.maxSpeed = 150;
+
+		this.marks = [];
+
+		this.tick = function(timeDiff) {
+			timeDiff /= 1000.;
+			this.x += this.direction.x * this.maxSpeed * timeDiff;
+			this.y += this.direction.y * this.maxSpeed * timeDiff;
+
+			if (this.x < 0) this.x += 1351;
+			if (this.y < 0) this.y += 760;
+			this.x %= 1351;
+			this.y %= 760;
+
+			if (this.marks.length == 0 || mts.computeDistance(this.marks[this.marks.length - 1], this) >= 30) {
+				let mark = new mts.GuardianMark(this.x, this.y);
+				this.marks.push(mark);
+				rtge.addObject(mark);
+				if (this.marks.length > 50) {
+					mark = this.marks.shift();
+					rtge.removeObject(mark);
+				}
+			}
+		};
+	},
+
+	GuardianMark: function(x, y) {
+		rtge.DynObject.call(this);
+		this.x = x;
+		this.y = y;
+		this.z = 1;
+		this.animation = 'guardian.mark';
+		this.anchorX = 15;
+		this.anchorY = 15;
+	},
+
+	keydown: function(e) {
+		var k = e.key.toLowerCase();
+		if (k == 'arrowup' || k == 'z' || k == 'w') {
+			mts.guardian.direction = {x: 0, y: -1};
+		}
+		if (k == 'arrowdown' || k == 's') {
+			mts.guardian.direction = {x: 0, y: 1};
+		}
+		if (k == 'arrowleft' || k == 'q' || k == 'a') {
+			mts.guardian.direction = {x: -1, y: 0};
+		}
+		if (k == 'arrowright' || k == 'd') {
+			mts.guardian.direction = {x: 1, y: 0};
+		}
 	},
 
 	addVelocities: function(v1, v2) {
