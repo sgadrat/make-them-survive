@@ -1,6 +1,7 @@
 var mts = {
 	zombies: [],
 	survivors: [],
+	spawns: [],
 	guardian: null,
 	nextSpawn: 8000,
 	paused: false,
@@ -63,7 +64,9 @@ var mts = {
 			mts.nextSpawn -= timeDiff;
 			if (mts.nextSpawn <= 0) {
 				mts.nextSpawn = 8000;
-				rtge.addObject(new mts.SpawnSpot(Math.random() * 1351, Math.random() * 760));
+				let spawn = new mts.SpawnSpot(Math.random() * 1351, Math.random() * 760);
+				mts.spawns.push(spawn);
+				rtge.addObject(spawn);
 			}
 		}
 	},
@@ -265,6 +268,7 @@ var mts = {
 			this.timer -= timeDiff;
 			if (this.timer <= 0) {
 				rtge.removeObject(this);
+				mts.spawns.splice(mts.spawns.indexOf(this), 1);
 				var entity;
 				if (Math.random() >= .5) {
 					entity = new mts.Zombie(this.x, this.y);
@@ -348,6 +352,9 @@ var mts = {
 		}
 		for (let i = 0; i < mts.survivors.length; ++i) {
 			mts.survivors[i].tick = null;
+		}
+		for (let i = 0; i < mts.spawns.length; ++i) {
+			mts.spawns[i].tick = null;
 		}
 		mts.guardian.tick = null;
 		mts.paused = true;
