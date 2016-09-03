@@ -26,14 +26,46 @@
 			background: rgba(255, 255, 255, 0);
 			text-align: center;
 		}
+
+		#intro {
+			background: rgba(255, 255, 255, .2);
+			font-family: "fantasy";
+			font-size: 3.8vw;
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+		}
+		#intro p {
+			text-align: center;
+		}
+		#intro .blabla {
+			font-size: 1vw;
+		}
+		#intro .title {
+			font-size: 4vw;
+		}
+		#intro .manual {
+			font-size: 2vw;
+		}
+		#intro .manual img {
+			vertical-align: middle;
+		}
 	</style>
 </head>
-<body onload="mts.init();" onkeydown="mts.keydown(event);" style="margin:0; padding:0">
+<body onkeydown="mts.keydown(event);" style="margin:0; padding:0">
 	<canvas id="view" style="width:1351px; height:760px"></canvas>
 
 	<div id="gameover" style="display:none">
-		<p>Someone has been murdered</p>
-		<p>Up to <span id="score_cnt"></span> peoples cohabited peacefully.</p>
+		<p>Somebody has been murdered</p>
+		<p>Up to <span id="score_cnt"></span> individuals coexisted peacefully.</p>
+	</div>
+
+	<div id="intro">
+		<p class="blabla">Two aggressive kinds appeared in your space. Someone told you:</p>
+		<p class="title">Make Them Survive</p>
+		<p class="manual"><img src="img/zombie_right.png" />Press any key<img src="img/survivor_left.png" /></p>
 	</div>
 </body>
 </html>

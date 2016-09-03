@@ -4,7 +4,7 @@ var mts = {
 	spawns: [],
 	guardian: null,
 	nextSpawn: 8000,
-	paused: false,
+	state: "not-started",
 
 	init: function() {
 		var graphics = [
@@ -60,7 +60,7 @@ var mts = {
 	},
 
 	globalTick: function(timeDiff) {
-		if (!mts.paused) {
+		if (mts.state == 'running') {
 			mts.nextSpawn -= timeDiff;
 			if (mts.nextSpawn <= 0) {
 				mts.nextSpawn = 8000;
@@ -283,18 +283,24 @@ var mts = {
 	},
 
 	keydown: function(e) {
-		var k = e.key.toLowerCase();
-		if (k == 'arrowup' || k == 'z' || k == 'w') {
-			mts.guardian.direction = {x: 0, y: -1};
-		}
-		if (k == 'arrowdown' || k == 's') {
-			mts.guardian.direction = {x: 0, y: 1};
-		}
-		if (k == 'arrowleft' || k == 'q' || k == 'a') {
-			mts.guardian.direction = {x: -1, y: 0};
-		}
-		if (k == 'arrowright' || k == 'd') {
-			mts.guardian.direction = {x: 1, y: 0};
+		if (mts.state == 'not-started') {
+			mts.init();
+			document.getElementById('intro').style.display = 'none';
+			mts.state = 'running';
+		}else if (mts.state == 'running') {
+			var k = e.key.toLowerCase();
+			if (k == 'arrowup' || k == 'z' || k == 'w') {
+				mts.guardian.direction = {x: 0, y: -1};
+			}
+			if (k == 'arrowdown' || k == 's') {
+				mts.guardian.direction = {x: 0, y: 1};
+			}
+			if (k == 'arrowleft' || k == 'q' || k == 'a') {
+				mts.guardian.direction = {x: -1, y: 0};
+			}
+			if (k == 'arrowright' || k == 'd') {
+				mts.guardian.direction = {x: 1, y: 0};
+			}
 		}
 	},
 
@@ -357,7 +363,7 @@ var mts = {
 			mts.spawns[i].tick = null;
 		}
 		mts.guardian.tick = null;
-		mts.paused = true;
+		mts.state = 'paused';
 
 		// Show game over screen
 		var gameoverScreen = document.getElementById('gameover');
