@@ -42,7 +42,7 @@ var mts = {
 		animations['spawn'].steps = ['img/spawn.png'];
 		animations['spawn'].durations = [600000];
 		mts.zombies = [
-			new mts.Zombie(100, 100),
+			new mts.Zombie(600, 400),
 		];
 		mts.survivors = [
 			new mts.Survivor(1250, 660),
@@ -123,6 +123,11 @@ var mts = {
 		this.tick = function(timeDiff) {
 			timeDiff /= 1000.;
 
+			zombie_distance = this.findNearestZombie().distance;
+			if (zombie_distance !== null && zombie_distance < 50) {
+				mts.gameover();
+			}
+
 			var direction = {x: 0, y: 0};
 			direction = mts.addVelocities(direction, this.steeringChase());
 			for (let i = 0; i < mts.guardian.marks.length; ++i) {
@@ -155,22 +160,25 @@ var mts = {
 			}
 		};
 
+		this.findNearestZombie = function() {
+			res = {zombie: null, distance: null};
+			for (let i = 0; i < mts.zombies.length; ++i) {
+				zombie_distance = mts.computeDistance(mts.zombies[i], this);
+				if (res.zombie == null || zombie_distance < res.distance) {
+					res.zombie = i;
+					res.distance = zombie_distance;
+				}
+			}
+			return res;
+		};
+
 		this.steeringChase = function() {
 			var res = {x: 0, y: 0};
 
-			nearest_zombie = null;
-			nearest_zombie_distance = null;
-			for (let i = 0; i < mts.zombies.length; ++i) {
-				zombie_distance = mts.computeDistance(mts.zombies[i], this);
-				if (nearest_zombie == null || zombie_distance < nearest_zombie_distance) {
-					nearest_zombie = i;
-					nearest_zombie_distance = zombie_distance;
-				}
-			}
-
-			if (nearest_zombie !== null) {
-				res = mts.computeDirectVector(this, mts.zombies[nearest_zombie]);
-				res = mts.normalizeVelocity(res, Math.min(200. / nearest_zombie_distance, 1.));
+			nearest_zombie = this.findNearestZombie();
+			if (nearest_zombie.zombie !== null) {
+				res = mts.computeDirectVector(this, mts.zombies[nearest_zombie.zombie]);
+				res = mts.normalizeVelocity(res, Math.min(200. / nearest_zombie.distance, 1.));
 			}
 
 			return res;
@@ -321,5 +329,15 @@ var mts = {
 
 	computeDistance: function(point1, point2) {
 		return mts.computeMagnitude(mts.computeDirectVector(point1, point2));
+	},
+
+	gameover: function() {
+		var canvas = document.getElementById('view');
+		var gameoverScreen = document.getElementById('gameover');
+		var scoreField = document.getElementById('score_cnt');
+
+		scoreField.innerHTML = '' + (mts.zombies.length + mts.survivors.length);
+		canvas.style.display = 'none';
+		gameoverScreen.style.display = '';
 	},
 };
