@@ -9,29 +9,19 @@ var mts = {
 			'img/guardian.png',
 			'img/mark.png',
 			'img/scene.jpg',
-			'img/survivor_up.png',
-			'img/survivor_right.png',
-			'img/survivor_down.png',
-			'img/survivor_left.png',
 			'img/spawn.png',
-			'img/zombie.png',
 		];
 		var animations = {};
-		animations['zombie'] = new rtge.Animation();
-		animations['zombie'].steps = ['img/zombie.png'];
-		animations['zombie'].durations = [600000];
-		animations['survivor.up'] = new rtge.Animation();
-		animations['survivor.up'].steps = ['img/survivor_up.png'];
-		animations['survivor.up'].durations = [600000];
-		animations['survivor.right'] = new rtge.Animation();
-		animations['survivor.right'].steps = ['img/survivor_right.png'];
-		animations['survivor.right'].durations = [600000];
-		animations['survivor.down'] = new rtge.Animation();
-		animations['survivor.down'].steps = ['img/survivor_down.png'];
-		animations['survivor.down'].durations = [600000];
-		animations['survivor.left'] = new rtge.Animation();
-		animations['survivor.left'].steps = ['img/survivor_left.png'];
-		animations['survivor.left'].durations = [600000];
+		['survivor', 'zombie'].forEach(function(kind) {
+			['up', 'right', 'down', 'left'].forEach(function(direction) {
+				var index = kind+'.'+direction;
+				var filename = 'img/'+kind+'_'+direction+'.png';
+				graphics.push(filename);
+				animations[index] = new rtge.Animation();
+				animations[index].steps = [filename];
+				animations[index].durations = [600000];
+			});
+		});
 		animations['guardian'] = new rtge.Animation();
 		animations['guardian'].steps = ['img/guardian.png'];
 		animations['guardian'].durations = [600000];
@@ -80,7 +70,7 @@ var mts = {
 		this.x = x;
 		this.y = y;
 		this.z = 2;
-		this.animation = 'zombie';
+		this.animation = 'zombie.down';
 		this.anchorX = 25;
 		this.anchorY = 50;
 
@@ -104,6 +94,20 @@ var mts = {
 			if (this.y < 0) this.y += 760;
 			this.x %= 1351;
 			this.y %= 760;
+
+			if (Math.abs(this.velocity.x) > Math.abs(this.velocity.y)) {
+				if (this.velocity.x < 0) {
+					this.animation = 'zombie.left';
+				}else {
+					this.animation = 'zombie.right';
+				}
+			}else {
+				if (this.velocity.y < 0) {
+					this.animation = 'zombie.up';
+				}else {
+					this.animation = 'zombie.down';
+				}
+			}
 		};
 
 		this.steeringRandom = function() {
