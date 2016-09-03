@@ -3,6 +3,7 @@ var mts = {
 	survivors: [],
 	guardian: null,
 	nextSpawn: 8000,
+	paused: false,
 
 	init: function() {
 		var graphics = [
@@ -58,10 +59,12 @@ var mts = {
 	},
 
 	globalTick: function(timeDiff) {
-		mts.nextSpawn -= timeDiff;
-		if (mts.nextSpawn <= 0) {
-			mts.nextSpawn = 8000;
-			rtge.addObject(new mts.SpawnSpot(Math.random() * 1351, Math.random() * 760));
+		if (!mts.paused) {
+			mts.nextSpawn -= timeDiff;
+			if (mts.nextSpawn <= 0) {
+				mts.nextSpawn = 8000;
+				rtge.addObject(new mts.SpawnSpot(Math.random() * 1351, Math.random() * 760));
+			}
 		}
 	},
 
@@ -339,12 +342,21 @@ var mts = {
 	},
 
 	gameover: function() {
-		var canvas = document.getElementById('view');
+		// Pause the game
+		for (let i = 0; i < mts.zombies.length; ++i) {
+			mts.zombies[i].tick = null;
+		}
+		for (let i = 0; i < mts.survivors.length; ++i) {
+			mts.survivors[i].tick = null;
+		}
+		mts.guardian.tick = null;
+		mts.paused = true;
+
+		// Show game over screen
 		var gameoverScreen = document.getElementById('gameover');
 		var scoreField = document.getElementById('score_cnt');
 
 		scoreField.innerHTML = '' + (mts.zombies.length + mts.survivors.length);
-		canvas.style.display = 'none';
 		gameoverScreen.style.display = '';
 	},
 };

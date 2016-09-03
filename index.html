@@ -5,9 +5,31 @@
 
 	<script src="js/rtge.js"></script>
 	<script src="js/mts.js"></script>
+
+	<style>
+		@font-face {
+			font-family: "fantasy";
+			src: url("fonts/swift.ttf");
+		}
+
+		#gameover {
+			background: rgba(255, 255, 255, .2);
+			font-family: "fantasy";
+			font-size: 4vw;
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+		}
+		#gameover p {
+			background: rgba(255, 255, 255, 0);
+			text-align: center;
+		}
+	</style>
 </head>
 <body onload="mts.init();" onkeydown="mts.keydown(event);" style="margin:0; padding:0">
-	<canvas id="view" style="width:1351; height:760"></canvas>
+	<canvas id="view" style="width:1351px; height:760px"></canvas>
 
 	<div id="gameover" style="display:none">
 		<p>Someone has been murdered</p>
