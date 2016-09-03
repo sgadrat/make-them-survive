@@ -91,6 +91,9 @@ var mts = {
 			timeDiff /= 1000.;
 			var direction = {x: 0, y: 0};
 			direction = mts.addVelocities(direction, mts.multiplyVelocity(this.steeringRandom(), this.maxSpeed * timeDiff / 2));
+			for (let i = 0; i < mts.guardian.marks.length; ++i) {
+				direction = mts.addVelocities(direction, mts.steeringFlee(this, mts.guardian.marks[i]));
+			}
 			this.velocity = mts.addVelocities(this.velocity, direction);
 			this.velocity = mts.normalizeVelocity(this.velocity, this.maxSpeed * timeDiff);
 
@@ -124,7 +127,7 @@ var mts = {
 			timeDiff /= 1000.;
 
 			zombie_distance = this.findNearestZombie().distance;
-			if (zombie_distance !== null && zombie_distance < 50) {
+			if (zombie_distance !== null && zombie_distance < 25) {
 				mts.gameover();
 			}
 
@@ -205,7 +208,7 @@ var mts = {
 		this.anchorY = 50;
 
 		this.direction = {x: 0, y: -1};
-		this.maxSpeed = 150;
+		this.maxSpeed = 300;
 
 		this.marks = [];
 
