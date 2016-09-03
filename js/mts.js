@@ -2,6 +2,7 @@ var mts = {
 	zombies: [],
 	survivors: [],
 	guardian: null,
+	nextSpawn: 8000,
 
 	init: function() {
 		var graphics = [
@@ -12,6 +13,7 @@ var mts = {
 			'img/survivor_right.png',
 			'img/survivor_down.png',
 			'img/survivor_left.png',
+			'img/spawn.png',
 			'img/zombie.png',
 		];
 		var animations = {};
@@ -36,6 +38,9 @@ var mts = {
 		animations['guardian.mark'] = new rtge.Animation();
 		animations['guardian.mark'].steps = ['img/mark.png'];
 		animations['guardian.mark'].durations = [600000];
+		animations['spawn'] = new rtge.Animation();
+		animations['spawn'].steps = ['img/spawn.png'];
+		animations['spawn'].durations = [600000];
 		mts.zombies = [
 			new mts.Zombie(100, 100),
 		];
@@ -63,6 +68,11 @@ var mts = {
 	},
 
 	globalTick: function(timeDiff) {
+		mts.nextSpawn -= timeDiff;
+		if (mts.nextSpawn <= 0) {
+			mts.nextSpawn = 8000;
+			rtge.addObject(new mts.SpawnSpot(Math.random() * 1351, Math.random() * 760));
+		}
 	},
 
 	Zombie: function(x, y) {
@@ -221,6 +231,33 @@ var mts = {
 		this.animation = 'guardian.mark';
 		this.anchorX = 15;
 		this.anchorY = 15;
+	},
+
+	SpawnSpot: function(x, y) {
+		rtge.DynObject.call(this);
+		this.x = x;
+		this.y = y;
+		this.z = 1;
+		this.animation = 'spawn';
+		this.anchorX = 50;
+		this.anchorY = 50;
+
+		this.timer = 5000;
+		this.tick = function(timeDiff) {
+			this.timer -= timeDiff;
+			if (this.timer <= 0) {
+				rtge.removeObject(this);
+				var entity;
+				if (Math.random() >= .5) {
+					entity = new mts.Zombie(this.x, this.y);
+					mts.zombies.push(entity);
+				}else {
+					entity = new mts.Survivor(this.x, this.y);
+					mts.survivors.push(entity);
+				}
+				rtge.addObject(entity);
+			}
+		};
 	},
 
 	keydown: function(e) {
