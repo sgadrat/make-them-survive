@@ -50,6 +50,8 @@ var mts = {
 			},
 			camera
 		);
+
+		document.getElementById('music').play();
 	},
 
 	globalTick: function(timeDiff) {
@@ -60,6 +62,7 @@ var mts = {
 				let spawn = new mts.SpawnSpot(Math.random() * 1351, Math.random() * 760);
 				mts.spawns.push(spawn);
 				rtge.addObject(spawn);
+				document.getElementById('spawn').play();
 			}
 		}
 	},
@@ -360,6 +363,9 @@ var mts = {
 	},
 
 	gameover: function(survivor, zombie) {
+		// Stop that terrible sound
+		document.getElementById('music').pause();
+
 		// Oponnents face themselves
 		if (Math.abs(survivor.x - zombie.x) > Math.abs(survivor.y - zombie.y)) {
 			if (survivor.x < zombie.x) {
