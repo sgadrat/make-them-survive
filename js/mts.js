@@ -14,8 +14,8 @@ var mts = {
 		var animations = {};
 		['survivor', 'zombie', 'guardian'].forEach(function(kind) {
 			['up', 'right', 'down', 'left'].forEach(function(direction) {
-				var index = kind+'.'+direction;
-				var filename = 'img/'+kind+'_'+direction+'.png';
+				let index = kind+'.'+direction;
+				let filename = 'img/'+kind+'_'+direction+'.png';
 				graphics.push(filename);
 				animations[index] = new rtge.Animation();
 				animations[index].steps = [filename];
@@ -279,6 +279,14 @@ var mts = {
 				}
 				rtge.addObject(entity);
 			}
+		};
+
+		this.preRender = function(canvasCtx) {
+			canvasCtx.beginPath();
+			canvasCtx.arc(this.x, this.y, 50, -0.5*Math.PI, (-0.5*Math.PI) + (2*Math.PI) * (5000 - this.timer) / 5000);
+			canvasCtx.strokeStyle = "rgba(255, 0, 0, .4)";
+			canvasCtx.lineWidth = 10;
+			canvasCtx.stroke();
 		};
 	},
 

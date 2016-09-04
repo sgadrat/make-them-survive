@@ -17,6 +17,7 @@ var rtge = {
 		this.visible = true; ///< is the object drawn and clickable
 		this.tick = null; ///< function called to update the object for the next frame
 		this.click = null; ///< function called when the object is left clicked
+		this.preRender = null; ///< function called before drawing the object
 	},
 
 	// A camera viewing the scene
@@ -212,6 +213,10 @@ var rtge = {
 		for (i = 0; i < rtge.state.objects.length; ++i) {
 			var o = rtge.state.objects[i];
 			if (o.visible) {
+				if (o.preRender != null) {
+					o.preRender(rtge.canvasCtx);
+				}
+
 				// Get the image to print on this frame
 				var img = rtge.getAnimationImage(o.animation, o.animationPosition);
 
