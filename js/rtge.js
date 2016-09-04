@@ -57,8 +57,8 @@ var rtge = {
 		rtge.lastUpdate = Date.now();
 		rtge.canvas = document.getElementById(canvasId);
 		var style = getComputedStyle(rtge.canvas);
-		rtge.canvas.width = style.width.slice(0, style.width.length - 2);
-		rtge.canvas.height = style.height.slice(0, style.height.length - 2);
+		rtge.canvas.width = 1351;
+		rtge.canvas.height = 760;
 		rtge.canvasCtx = rtge.canvas.getContext('2d');
 		rtge.animations = animations;
 
@@ -517,9 +517,6 @@ var rtge = {
 	},
 	
 	canvasResize: function(evt) {
-		var style = getComputedStyle(rtge.canvas);
-		rtge.canvas.width = style.width.slice(0, style.width.length - 2);
-		rtge.canvas.height = style.height.slice(0, style.height.length - 2);
 	},
 
 	getAnimationImage: function(animation, currentDuration) {
