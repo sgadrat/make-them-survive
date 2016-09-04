@@ -8,13 +8,11 @@ var mts = {
 
 	init: function() {
 		var graphics = [
-			'img/guardian.png',
-			'img/mark.png',
 			'img/scene.jpg',
 			'img/spawn.png',
 		];
 		var animations = {};
-		['survivor', 'zombie'].forEach(function(kind) {
+		['survivor', 'zombie', 'guardian'].forEach(function(kind) {
 			['up', 'right', 'down', 'left'].forEach(function(direction) {
 				var index = kind+'.'+direction;
 				var filename = 'img/'+kind+'_'+direction+'.png';
@@ -24,12 +22,6 @@ var mts = {
 				animations[index].durations = [600000];
 			});
 		});
-		animations['guardian'] = new rtge.Animation();
-		animations['guardian'].steps = ['img/guardian.png'];
-		animations['guardian'].durations = [600000];
-		animations['guardian.mark'] = new rtge.Animation();
-		animations['guardian.mark'].steps = ['img/mark.png'];
-		animations['guardian.mark'].durations = [600000];
 		animations['spawn'] = new rtge.Animation();
 		animations['spawn'].steps = ['img/spawn.png'];
 		animations['spawn'].durations = [600000];
@@ -53,7 +45,8 @@ var mts = {
 			[],
 			graphics,
 			{
-				'globalTick': mts.globalTick
+				'globalTick': mts.globalTick,
+				'renderPostTerrain': mts.drawBarrier
 			},
 			camera
 		);
@@ -218,9 +211,9 @@ var mts = {
 		this.x = x;
 		this.y = y;
 		this.z = 2;
-		this.animation = 'guardian';
-		this.anchorX = 25;
-		this.anchorY = 50;
+		this.animation = 'guardian.down';
+		this.anchorX = 50;
+		this.anchorY = 100;
 
 		this.direction = {x: 0, y: -1};
 		this.maxSpeed = 350;
@@ -238,25 +231,27 @@ var mts = {
 			this.y %= 760;
 
 			if (this.marks.length == 0 || mts.computeDistance(this.marks[this.marks.length - 1], this) >= 30) {
-				let mark = new mts.GuardianMark(this.x, this.y);
+				let mark = {x: this.x, y: this.y};
 				this.marks.push(mark);
-				rtge.addObject(mark);
 				if (this.marks.length > 50) {
-					mark = this.marks.shift();
-					rtge.removeObject(mark);
+					this.marks.shift();
+				}
+			}
+
+			if (Math.abs(this.direction.x) > Math.abs(this.direction.y)) {
+				if (this.direction.x < 0) {
+					this.animation = 'guardian.left';
+				}else {
+					this.animation = 'guardian.right';
+				}
+			}else {
+				if (this.direction.y < 0) {
+					this.animation = 'guardian.up';
+				}else {
+					this.animation = 'guardian.down';
 				}
 			}
 		};
-	},
-
-	GuardianMark: function(x, y) {
-		rtge.DynObject.call(this);
-		this.x = x;
-		this.y = y;
-		this.z = 1;
-		this.animation = 'guardian.mark';
-		this.anchorX = 15;
-		this.anchorY = 15;
 	},
 
 	SpawnSpot: function(x, y) {
@@ -395,5 +390,43 @@ var mts = {
 
 		scoreField.innerHTML = '' + (mts.zombies.length + mts.survivors.length);
 		gameoverScreen.style.display = '';
+	},
+
+	drawBarrier: function(canvasCtx) {
+		if (mts.guardian.marks.length > 0) {
+			canvasCtx.lineWidth = 30;
+			var path = new Path2D();
+			path.moveTo(mts.guardian.marks[0].x, mts.guardian.marks[0].y);
+			for (let i = 1; i < mts.guardian.marks.length; ++i) {
+				let orig = {x: mts.guardian.marks[i-1].x, y: mts.guardian.marks[i-1].y};
+				let dest = {x: mts.guardian.marks[i].x, y: mts.guardian.marks[i].y};
+				let moveTo = {x: orig.x, y: orig.y};
+				let drawTo = {x: dest.x, y: dest.y};
+				if (Math.abs(dest.x - orig.x) > 1351/2) {
+					moveTo.x = (dest.x < 1351/2 ? 0 : 1351);
+					drawTo.x = (dest.x < 1351/2 ? 1351 : 0);
+				}
+				if (Math.abs(dest.y - orig.y) > 760/2) {
+					moveTo.y = (dest.y < 760/2 ? 0 : 760);
+					drawTo.y = (dest.y < 760/2 ? 760 : 0);
+				}
+				if (moveTo.x != orig.x || moveTo.y != orig.y) {
+					path.lineTo(drawTo.x, drawTo.y);
+					path.moveTo(moveTo.x, moveTo.y);
+				}
+				path.lineTo(mts.guardian.marks[i].x, mts.guardian.marks[i].y);
+			}
+			mts.strokeBarrierLine(canvasCtx, path);
+		}
+	},
+
+	strokeBarrierLine: function(canvasCtx, path) {
+		canvasCtx.strokeStyle = "rgba(0, 255, 160, .4)";
+		canvasCtx.lineWidth = 20 + Math.random() * 2;
+		canvasCtx.stroke(path);
+
+		canvasCtx.strokeStyle = "rgba(200, 255, 255, .4)";
+		canvasCtx.lineWidth = 5 + Math.random() * 2;
+		canvasCtx.stroke(path);
 	},
 };

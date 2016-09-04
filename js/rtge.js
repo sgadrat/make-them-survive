@@ -93,6 +93,9 @@ var rtge = {
 		if ('globalTick' in callbacks) {
 			rtge.globalTick = callbacks.globalTick;
 		}
+		if ('renderPostTerrain' in callbacks) {
+			rtge.renderPostTerrain = callbacks.renderPostTerrain;
+		}
 
 		// Add needed images to preloads
 		var i;
@@ -200,6 +203,9 @@ var rtge = {
 
 		// Map
 		rtge.drawImage(rtge.state.terrain, -rtge.camera.x, -rtge.camera.y);
+		if (rtge.renderPostTerrain != null) {
+			rtge.renderPostTerrain(rtge.canvasCtx);
+		}
 
 		// Dynamic objects
 		var i;
@@ -663,6 +669,10 @@ var rtge = {
 	// Function called before updating the state
 	// takes one number as parameter (the number of milliseconds since the last tick)
 	globalTick: null,
+
+	// Function called after the render of terrain but before rndering of dynamic objects
+	// takes one parameter (the canvas's context)
+	renderPostTerrain: null,
 
 	// True when the next mouseUp event is a click
 	canClick: false,
