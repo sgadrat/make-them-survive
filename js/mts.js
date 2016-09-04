@@ -81,14 +81,17 @@ var mts = {
 		this.anchorY = 50;
 
 		this.velocity = {x: 0, y: 0};
-		this.maxSpeed = 100;
+		this.maxSpeed = 80;
 
 		this.tick = function(timeDiff) {
 			timeDiff /= 1000.;
 			var direction = {x: 0, y: 0};
 			direction = mts.addVelocities(direction, mts.multiplyVelocity(this.steeringRandom(), this.maxSpeed * timeDiff / 2));
 			for (let i = 0; i < mts.guardian.marks.length; ++i) {
-				direction = mts.addVelocities(direction, mts.steeringFlee(this, mts.guardian.marks[i]));
+				direction = mts.addVelocities(direction, mts.steeringFlee(this, mts.guardian.marks[i], 200));
+			}
+			if (mts.survivors.length > 0) {
+				direction = mts.addVelocities(direction, mts.steeringFlee(this, mts.survivors[mts.findNearest(this, mts.survivors).index], 500));
 			}
 			this.velocity = mts.addVelocities(this.velocity, direction);
 			this.velocity = mts.normalizeVelocity(this.velocity, this.maxSpeed * timeDiff);
@@ -128,23 +131,25 @@ var mts = {
 		this.z = 2;
 		this.animation = 'survivor.down';
 		this.anchorX = 25;
-		this.anchorY = 50;
+		this.anchorY = 100;
 
 		this.velocity = {x: 0, y: 0};
-		this.maxSpeed = 150;
+		this.maxSpeed = 100;
 
 		this.tick = function(timeDiff) {
 			timeDiff /= 1000.;
 
-			zombie_distance = this.findNearestZombie().distance;
-			if (zombie_distance !== null && zombie_distance < 25) {
-				mts.gameover();
+			if (mts.zombies.length > 0) {
+				zombie_distance = mts.findNearest(this, mts.zombies).distance;
+				if (zombie_distance !== null && zombie_distance < 25) {
+					mts.gameover();
+				}
 			}
 
 			var direction = {x: 0, y: 0};
 			direction = mts.addVelocities(direction, this.steeringChase());
 			for (let i = 0; i < mts.guardian.marks.length; ++i) {
-				direction = mts.addVelocities(direction, mts.steeringFlee(this, mts.guardian.marks[i]));
+				direction = mts.addVelocities(direction, mts.steeringFlee(this, mts.guardian.marks[i], 200));
 			}
 
 			this.velocity = mts.addVelocities(this.velocity, direction);
@@ -173,24 +178,12 @@ var mts = {
 			}
 		};
 
-		this.findNearestZombie = function() {
-			res = {zombie: null, distance: null};
-			for (let i = 0; i < mts.zombies.length; ++i) {
-				zombie_distance = mts.computeDistance(mts.zombies[i], this);
-				if (res.zombie == null || zombie_distance < res.distance) {
-					res.zombie = i;
-					res.distance = zombie_distance;
-				}
-			}
-			return res;
-		};
-
 		this.steeringChase = function() {
 			var res = {x: 0, y: 0};
 
-			nearest_zombie = this.findNearestZombie();
-			if (nearest_zombie.zombie !== null) {
-				res = mts.computeDirectVector(this, mts.zombies[nearest_zombie.zombie]);
+			nearest_zombie = mts.findNearest(this, mts.zombies);
+			if (nearest_zombie.index !== null) {
+				res = mts.computeDirectVector(this, mts.zombies[nearest_zombie.index]);
 				res = mts.normalizeVelocity(res, Math.min(200. / nearest_zombie.distance, 1.));
 			}
 
@@ -198,10 +191,22 @@ var mts = {
 		};
 	},
 
-	steeringFlee: function(actor, fleeFrom) {
+	findNearest: function(from, entities) {
+		res = {index: null, distance: null};
+		for (let i = 0; i < entities.length; ++i) {
+			entity_distance = mts.computeDistance(entities[i], from);
+			if (res.index == null || entity_distance < res.distance) {
+				res.index = i;
+				res.distance = entity_distance;
+			}
+		}
+		return res;
+	},
+
+	steeringFlee: function(actor, fleeFrom, distanceMax) {
 		var fleeDirection = mts.multiplyVelocity(mts.computeDirectVector(actor, fleeFrom), -1.);
 		var pointDistance = mts.computeMagnitude(fleeDirection);
-		if (pointDistance < 200) {
+		if (pointDistance < distanceMax) {
 			return mts.normalizeVelocity(fleeDirection, Math.min(Math.pow(50., 10) / Math.pow(pointDistance, 10), 1.));
 		} else {
 			return {x:0, y:0};
@@ -218,7 +223,7 @@ var mts = {
 		this.anchorY = 50;
 
 		this.direction = {x: 0, y: -1};
-		this.maxSpeed = 300;
+		this.maxSpeed = 350;
 
 		this.marks = [];
 
