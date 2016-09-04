@@ -140,9 +140,9 @@ var mts = {
 			timeDiff /= 1000.;
 
 			if (mts.zombies.length > 0) {
-				zombie_distance = mts.findNearest(this, mts.zombies).distance;
-				if (zombie_distance !== null && zombie_distance < 25) {
-					mts.gameover();
+				zombie = mts.findNearest(this, mts.zombies);
+				if (zombie.distance !== null && zombie.distance < 25) {
+					mts.gameover(this, mts.zombies[zombie.index]);
 				}
 			}
 
@@ -356,7 +356,26 @@ var mts = {
 		return mts.computeMagnitude(mts.computeDirectVector(point1, point2));
 	},
 
-	gameover: function() {
+	gameover: function(survivor, zombie) {
+		// Oponnents face themselves
+		if (Math.abs(survivor.x - zombie.x) > Math.abs(survivor.y - zombie.y)) {
+			if (survivor.x < zombie.x) {
+				survivor.animation = 'survivor.right';
+				zombie.animation = 'zombie.left';
+			}else {
+				survivor.animation = 'survivor.left';
+				zombie.animation = 'zombie.right';
+			}
+		}else {
+			if (survivor.y < zombie.y) {
+				survivor.animation = 'survivor.down';
+				zombie.animation = 'zombie.up';
+			}else {
+				survivor.animation = 'survivor.up';
+				zombie.animation = 'zombie.down';
+			}
+		}
+
 		// Pause the game
 		for (let i = 0; i < mts.zombies.length; ++i) {
 			mts.zombies[i].tick = null;
